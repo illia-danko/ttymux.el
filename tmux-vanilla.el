@@ -6,7 +6,7 @@
 ;; URL: https://github.com/elijahdanko/tmux-vanilla.el
 ;; Created: February 19, 2022
 ;; Keywords: convenience, terminals, tmux, window, pane, navigation, integration
-;; Package-Requires: ((dired "7.17") (emacs "24"))
+;; Package-Requires: ((emacs "24"))
 ;; Version: 0.1
 
 ;; This file is not part of GNU Emacs.
