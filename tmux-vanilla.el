@@ -113,6 +113,6 @@ such as C-x o and C-x 1."
       (tmux-vanilla--mode-on)
     (tmux-vanilla--mode-off)))
 
-(provide 'tmux-vanilla-mode)
+(provide 'tmux-vanilla)
 
 ;;; tmux-vanilla.el ends here
