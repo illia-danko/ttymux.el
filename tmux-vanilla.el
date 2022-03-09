@@ -46,7 +46,7 @@
 ;; bind-key -T prefix % if-shell "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
 ;; bind-key -T prefix c if-shell "$is_emacs" "send-prefix ; send-keys c" "new-window -c \"#{pane_current_path}\""
 ;; bind -Temacs-keys o if-shell "$is_emacs" "send C-x; send" "select-pane -t :.+"
-;; bind -Temacs-keys 1 if-shell "$is_last_pane" "send C-x; send" "resize-pane -Z"
+;; bind -Temacs-keys 1 { kill-pane -a; send C-x; send }
 ;; bind -Temacs-keys Any { send C-x; send }
 ;; bind -Troot C-x switch-client -Temacs-keys
 
@@ -77,13 +77,24 @@
   (ignore-errors (call-process "tmux" nil nil nil "split-window" "-h" "-c"
                                (tmux-vanilla--current-dir major-mode))))
 
+(defun tmux-vanilla--shell-command-equal (shell-cmd value)
+  (string-equal value (string-trim (shell-command-to-string shell-cmd))))
+
 (defun tmux-vanilla--tmux-other-window ()
-  "Switch to the next window if opened, otherwise select a next
-tmux pane."
+  "Circle over Emacs windows, if the last window switch to the
+next tmux pane if any."
   (interactive)
-  (if (eq (next-window) (get-buffer-window))
-      (ignore-errors (call-process "tmux" nil nil nil "select-pane" "-t" ":.+"))
-    (other-window 1)))
+  (cond
+   ((eq (next-window) (get-buffer-window))
+    (ignore-errors (call-process "tmux" nil nil nil "select-pane" "-t" ":.+")))
+   ((and (not (window-in-direction 'right))
+         (not (window-in-direction 'below))
+         (or (tmux-vanilla--shell-command-equal "tmux display-message -p \"#{pane_at_right}\"" "1")
+             (tmux-vanilla--shell-command-equal "tmux display-message -p \"#{pane_at_left}\"" "1")
+             (not (tmux-vanilla--shell-command-equal "tmux display-message -p \"#{window_panes}\"" "1"))))
+    (other-window 1)
+    (ignore-errors (call-process "tmux" nil nil nil "select-pane" "-t" ":.+")))
+   (t (other-window 1))))
 
 (defvar tmux-vanilla-mode-hook nil
   "Run after tmux-vanilla-mode turned on.")
