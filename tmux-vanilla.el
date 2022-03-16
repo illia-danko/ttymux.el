@@ -6,7 +6,7 @@
 ;; URL: https://github.com/elijahdanko/tmux-vanilla.el
 ;; Created: February 19, 2022
 ;; Keywords: convenience, terminals, tmux, window, pane, navigation, integration
-;; Package-Requires: ((emacs "24"))
+;; Package-Requires: ((emacs "24") (projectile "2.0.0"))
 ;; Version: 0.1
 
 ;; This file is not part of GNU Emacs.
@@ -50,6 +50,13 @@
 ;; bind -Temacs-keys Any { send C-x; send }
 ;; bind -Troot C-x switch-client -Temacs-keys
 
+(require 'projectile)
+
+(defcustom tmux-vanilla-pane-directory 'project
+  "Advice tmux to choose a directory to open a pane."
+  :type '(choice (const :tag "Project directory" project)
+                 (const :tag "Active buffer path" buffer)
+                 (const :tag "Home folder" home)))
 
 (defvar tmux-vanilla-prefix-key "C-q"
   "Tmux prefix key.")
@@ -65,17 +72,23 @@
     ('dired-mode (dired-current-directory))
     (_ default-directory)))
 
+(defun tmux-vanilla--pane-path ()
+  (pcase tmux-vanilla-pane-directory
+    ('project (projectile-project-root))
+    ('buffer (tmux-vanilla--current-dir major-mode))
+    (_ "~")))
+
 (defun tmux-vanilla--create-tmux-tab ()
   "Create a new Tmux tab."
   (interactive)
   (ignore-errors (call-process "tmux" nil nil nil "new-window" "-c"
-                               (tmux-vanilla--current-dir major-mode))))
+                               (tmux-vanilla--pane-path))))
 
 (defun tmux-vanilla--split-tmux-window-horiz ()
   "Split Tmux window horizontally."
   (interactive)
   (ignore-errors (call-process "tmux" nil nil nil "split-window" "-h" "-c"
-                               (tmux-vanilla--current-dir major-mode))))
+                               (tmux-vanilla--pane-path))))
 
 (defun tmux-vanilla--shell-command-equal (shell-cmd value)
   (string-equal value (string-trim (shell-command-to-string shell-cmd))))
