@@ -52,52 +52,73 @@
 
 (require 'projectile)
 
-(defcustom ttymux-pane-directory 'project
-  "Advice tmux to choose a directory to open a pane."
-  :type '(choice (const :tag "Project directory" project)
+(defcustom ttymux-pane-directory-method 'project
+  "Advice Tmux to choose a directory to open a pane."
+  :type '(choice (const :tag "Project path" project)
                  (const :tag "Active buffer path" buffer)
-                 (const :tag "Home folder" home)))
+                 (const :tag "Home folder path" home)))
 
 (defvar ttymux-prefix-key "C-q"
   "Tmux prefix key.")
 
-(defvar ttymux-new-tmux-tab-key "c"
+(defvar ttymux-new-window-key "c"
   "Create a new Tmux tab key.")
 
-(defvar ttymux-split-window-horizonatly "%"
+(defvar ttymux-split-horizonatally-key "%"
   "Split Tmux window horizontally.")
 
-(defvar ttymux-fallback-path "~"
+(defvar ttymux-fallback-directory "~"
   "Tmux pane path be used as a last resort.")
 
-(defun ttymux--current-dir (mode)
+(defvar ttymux-new-window-fn 'ttymux-new-window-default
+  "Specify a function to open tmux window.")
+
+(defvar ttymux-split-horizonatally-fn 'ttymux-split-horizonatally-default
+  "Specify a function to open tmux pane horizontally.")
+
+(defun ttymux--current-directory (mode)
   (pcase mode
     ('dired-mode (dired-current-directory))
     (_ default-directory)))
 
-(defun ttymux--pane-path ()
-  (pcase ttymux-pane-directory
+(defun ttymux--pane-directory ()
+  (pcase ttymux-pane-directory-method
     ('project (or (projectile-project-root)
-                  (ttymux--current-dir major-mode)
-                  ttymux-fallback-path))
-    ('buffer (or (ttymux--current-dir major-mode)
-                 ttymux-fallback-path))
-    (_ ttymux-fallback-path)))
+                  (ttymux--current-directory major-mode)
+                  ttymux-fallback-directory))
+    ('buffer (or (ttymux--current-directory major-mode)
+                 ttymux-fallback-directory))
+    (_ ttymux-fallback-directory)))
 
-(defun ttymux--create-tmux-tab ()
-  "Create a new Tmux tab."
+(defun ttymux--tmux-cmd (&rest args)
+  (ignore-errors (apply 'call-process "tmux" nil nil nil args)))
+
+(defun ttymux-new-window-default ()
+  "Create a new Tmux window/tab. Pane path is defined by
+`ttymux-pane-directory-method'."
+  (ttymux--tmux-cmd "new-window" "-c" (ttymux--pane-directory)))
+
+(defun ttymux-new-window ()
   (interactive)
-  (ignore-errors (call-process "tmux" nil nil nil "new-window" "-c"
-                               (ttymux--pane-path))))
+  (funcall ttymux-new-window-fn))
 
-(defun ttymux--split-tmux-window-horiz ()
-  "Split Tmux window horizontally."
+(defun ttymux-split-horizonatally-default ()
+  "Create a new horizontal Tmux pane. Pane path is defined by
+`ttymux-pane-directory-method'."
   (interactive)
-  (ignore-errors (call-process "tmux" nil nil nil "split-window" "-h" "-c"
-                               (ttymux--pane-path))))
+  (ttymux--tmux-cmd "split-window" "-h" "-c" (ttymux--pane-directory)))
 
-(defun ttymux--shell-command-equal (shell-cmd value)
-  (string-equal value (string-trim (shell-command-to-string shell-cmd))))
+(defun ttymux-split-horizonatally ()
+  (interactive)
+  (funcall ttymux-split-horizonatally-fn))
+
+(defun ttymux--next-pane ()
+  (ttymux--tmux-cmd "select-pane" "-t" ":.+"))
+
+(defun ttymux--tmux-cmd-string-equal (value &rest args)
+  (let* ((cmd-args (apply 'concat "tmux " args))
+         (cmd-output (string-trim (shell-command-to-string cmd-args))))
+    (string-equal value cmd-output)))
 
 (defun ttymux--tmux-other-window ()
   "Circle over Emacs windows, if the last window switch to the
@@ -105,14 +126,14 @@ next tmux pane if any."
   (interactive)
   (cond
    ((eq (next-window) (get-buffer-window))
-    (ignore-errors (call-process "tmux" nil nil nil "select-pane" "-t" ":.+")))
+    (ttymux--next-pane))
    ((and (not (window-in-direction 'right))
          (not (window-in-direction 'below))
-         (or (ttymux--shell-command-equal "tmux display-message -p \"#{pane_at_right}\"" "1")
-             (ttymux--shell-command-equal "tmux display-message -p \"#{pane_at_left}\"" "1")
-             (not (ttymux--shell-command-equal "tmux display-message -p \"#{window_panes}\"" "1"))))
+         (or (ttymux--tmux-cmd-string-equal "1" "display-message -p \"#{pane_at_right}\"")
+             (ttymux--tmux-cmd-string-equal "1" "display-message -p \"#{pane_at_left}\"")
+             (not (ttymux--tmux-cmd-string-equal "1" "display-message -p \"#{window_panes}\""))))
     (other-window 1)
-    (ignore-errors (call-process "tmux" nil nil nil "select-pane" "-t" ":.+")))
+    (ttymux--next-pane))
    (t (other-window 1))))
 
 (defvar ttymux-mode-hook nil
@@ -120,15 +141,15 @@ next tmux pane if any."
 
 (defun ttymux--mode-on ()
   "Override default keys. Run hooks."
-  (let ((new-tmux-tab-key (concat ttymux-prefix-key
-                                  " "
-                                  ttymux-new-tmux-tab-key))
-        (split-tmux-win-hor-key (concat ttymux-prefix-key
-                                        " "
-                                        ttymux-split-window-horizonatly)))
-    (global-set-key (kbd ttymux-prefix-key) nil)
-    (global-set-key (kbd new-tmux-tab-key) #'ttymux--create-tmux-tab)
-    (global-set-key (kbd split-tmux-win-hor-key) #'ttymux--split-tmux-window-horiz)
+  (let ((new-window-key (concat ttymux-prefix-key
+                                " "
+                                ttymux-new-window-key))
+        (split-horizonatally-key (concat ttymux-prefix-key
+                                       " "
+                                       ttymux-split-horizonatally-key)))
+    (global-set-key (kbd ttymux-prefix-key) nil) ; remove other keys if any
+    (global-set-key (kbd new-window-key) #'ttymux-new-window)
+    (global-set-key (kbd split-horizonatally-key) #'ttymux-split-horizonatally)
     (global-set-key [remap other-window] #'ttymux--tmux-other-window))
   (run-hooks 'ttymux-mode-hook))
 
@@ -138,7 +159,7 @@ next tmux pane if any."
 (define-minor-mode ttymux-mode
   "Switch between Emacs and Tmux using vanilla Emacs shortcuts,
 such as C-x o and C-x 1."
-  :lighter " TTYMUX"
+  :lighter " TMUX"
   (if ttymux-mode
       (ttymux--mode-on)
     (ttymux--mode-off)))
