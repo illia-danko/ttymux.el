@@ -67,6 +67,9 @@
 (defvar ttymux-split-window-horizonatly "%"
   "Split Tmux window horizontally.")
 
+(defvar ttymux-fallback-path "~"
+  "Tmux pane path be used as a last resort.")
+
 (defun ttymux--current-dir (mode)
   (pcase mode
     ('dired-mode (dired-current-directory))
@@ -74,9 +77,12 @@
 
 (defun ttymux--pane-path ()
   (pcase ttymux-pane-directory
-    ('project (projectile-project-root))
-    ('buffer (ttymux--current-dir major-mode))
-    (_ "~")))
+    ('project (or (projectile-project-root)
+                  (ttymux--current-dir major-mode)
+                  ttymux-fallback-path))
+    ('buffer (or (ttymux--current-dir major-mode)
+                 ttymux-fallback-path))
+    (_ ttymux-fallback-path)))
 
 (defun ttymux--create-tmux-tab ()
   "Create a new Tmux tab."
