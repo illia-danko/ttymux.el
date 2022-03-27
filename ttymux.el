@@ -159,7 +159,7 @@ next tmux pane if any."
 (define-minor-mode ttymux-mode
   "Switch between Emacs and Tmux using vanilla Emacs shortcuts,
 such as C-x o and C-x 1."
-  :lighter " TMUX"
+  :lighter " TTYMUX"
   (if ttymux-mode
       (ttymux--mode-on)
     (ttymux--mode-off)))
