@@ -42,12 +42,13 @@
 ;; set -g prefix C-q
 ;; bind C-q send-prefix
 ;; is_emacs='echo "#{pane_current_command}" | grep -iqE "emacs"'
-;; is_last_pane='echo "#{window_panes}" | grep -qwE "1"'
-;; bind-key -T prefix % if-shell "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
-;; bind-key -T prefix c if-shell "$is_emacs" "send-prefix ; send-keys c" "new-window -c \"#{pane_current_path}\""
-;; bind -Temacs-keys o if-shell "$is_emacs" "send C-x; send" "select-pane -t :.+"
-;; bind -Temacs-keys 1 { kill-pane -a; send C-x; send }
+;; is_other_panes='echo "#{window_panes}" | grep -vqwE "1"'
+;; bind-key -T prefix % if "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
+;; bind-key -T prefix c if "$is_emacs" "send-prefix ; send-keys c" "new-window -c \"#{pane_current_path}\""
+;; bind -Temacs-keys o if "$is_emacs" "send C-x; send" "select-pane -t :.+"
 ;; bind -Temacs-keys Any { send C-x; send }
+;; bind -Temacs-keys 1 { kill-pane -a; send C-x; send }
+;; bind -Temacs-keys 0 if "$is_emacs" "send C-x; send" 'if $is_other_panes kill-pane'
 ;; bind -Troot C-x switch-client -Temacs-keys
 
 (require 'projectile)
@@ -120,7 +121,7 @@
          (cmd-output (string-trim (shell-command-to-string cmd-args))))
     (string-equal value cmd-output)))
 
-(defun ttymux--tmux-other-window ()
+(defun ttymux-other-window ()
   "Circle over Emacs windows, if the last window switch to the
 next tmux pane if any."
   (interactive)
@@ -136,6 +137,16 @@ next tmux pane if any."
     (ttymux--next-pane))
    (t (other-window 1))))
 
+(defun ttymux-delete-window ()
+  "Run 'delete-window' if more than one frame windows or the last
+Tmux pane, otherwise kill the pane."
+  (interactive)
+  (cond
+   ((or (not (eq (next-window) (get-buffer-window)))
+        (ttymux--tmux-cmd-string-equal "1" "display-message -p \"#{window_panes}\""))
+    (delete-window))
+   (t (ttymux--tmux-cmd "kill-pane"))))
+
 (defvar ttymux-mode-hook nil
   "Run after ttymux-mode turned on.")
 
@@ -150,7 +161,8 @@ next tmux pane if any."
     (global-set-key (kbd ttymux-prefix-key) nil) ; remove other keys if any
     (global-set-key (kbd new-window-key) #'ttymux-new-window)
     (global-set-key (kbd split-horizonatally-key) #'ttymux-split-horizonatally)
-    (global-set-key [remap other-window] #'ttymux--tmux-other-window))
+    (global-set-key [remap other-window] #'ttymux-other-window)
+    (global-set-key [remap delete-window] #'ttymux-delete-window))
   (run-hooks 'ttymux-mode-hook))
 
 (defun ttymux--mode-off ())
