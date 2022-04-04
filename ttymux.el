@@ -65,7 +65,7 @@
 (defvar ttymux-new-window-key "c"
   "Create a new Tmux tab key.")
 
-(defvar ttymux-split-horizonatally-key "%"
+(defvar ttymux-split-horizontally-key "%"
   "Split Tmux window horizontally.")
 
 (defvar ttymux-fallback-directory "~"
@@ -74,7 +74,7 @@
 (defvar ttymux-new-window-fn 'ttymux-new-window-default
   "Specify a function to open tmux window.")
 
-(defvar ttymux-split-horizonatally-fn 'ttymux-split-horizonatally-default
+(defvar ttymux-split-horizontally-fn 'ttymux-split-horizontally-default
   "Specify a function to open tmux pane horizontally.")
 
 (defun ttymux--current-directory (mode)
@@ -103,15 +103,15 @@
   (interactive)
   (funcall ttymux-new-window-fn))
 
-(defun ttymux-split-horizonatally-default ()
+(defun ttymux-split-horizontally-default ()
   "Create a new horizontal Tmux pane. Pane path is defined by
 `ttymux-pane-directory-method'."
   (interactive)
   (ttymux--tmux-cmd "split-window" "-h" "-c" (ttymux--pane-directory)))
 
-(defun ttymux-split-horizonatally ()
+(defun ttymux-split-horizontally ()
   (interactive)
-  (funcall ttymux-split-horizonatally-fn))
+  (funcall ttymux-split-horizontally-fn))
 
 (defun ttymux--next-pane ()
   (ttymux--tmux-cmd "select-pane" "-t" ":.+"))
@@ -155,12 +155,12 @@ Tmux pane, otherwise kill the pane."
   (let ((new-window-key (concat ttymux-prefix-key
                                 " "
                                 ttymux-new-window-key))
-        (split-horizonatally-key (concat ttymux-prefix-key
-                                       " "
-                                       ttymux-split-horizonatally-key)))
+        (split-horizontally-key (concat ttymux-prefix-key
+                                        " "
+                                        ttymux-split-horizontally-key)))
     (global-set-key (kbd ttymux-prefix-key) nil) ; remove other keys if any
     (global-set-key (kbd new-window-key) #'ttymux-new-window)
-    (global-set-key (kbd split-horizonatally-key) #'ttymux-split-horizonatally)
+    (global-set-key (kbd split-horizontally-key) #'ttymux-split-horizontally)
     (global-set-key [remap other-window] #'ttymux-other-window)
     (global-set-key [remap delete-window] #'ttymux-delete-window))
   (run-hooks 'ttymux-mode-hook))
