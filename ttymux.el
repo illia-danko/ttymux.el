@@ -35,16 +35,15 @@
 ;;; Code:
 
 ;;; Tmux integration (See tmux.conf for details).
-;; Feature added (https://github.com/tmux/tmux/issues/2904).
+;; Minimal tmux.conf.
 ;;
-;; Minimal tmux.conf:
-;; unbind C-b
-;; set -g prefix C-q
-;; bind C-q send-prefix
+;; Feature was requested  (https://github.com/tmux/tmux/issues/2904).
 ;; is_emacs='echo "#{pane_current_command}" | grep -iqE "emacs"'
 ;; is_other_panes='echo "#{window_panes}" | grep -vqwE "1"'
 ;; bind-key -T prefix % if "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
+;; bind-key -T prefix \" if "$is_emacs" 'send-prefix ; send-keys \"' "split-window -v -c \"#{pane_current_path}\""
 ;; bind-key -T prefix c if "$is_emacs" "send-prefix ; send-keys c" "new-window -c \"#{pane_current_path}\""
+;; # Feature requested: https://github.com/tmux/tmux/issues/2904
 ;; bind -Temacs-keys o if "$is_emacs" "send C-x; send" "select-pane -t :.+"
 ;; bind -Temacs-keys Any { send C-x; send }
 ;; bind -Temacs-keys 1 { kill-pane -a; send C-x; send }
@@ -68,6 +67,9 @@
 (defvar ttymux-split-horizontally-key "%"
   "Split Tmux window horizontally.")
 
+(defvar ttymux-split-vertically-key "\""
+  "Split Tmux window vertically.")
+
 (defvar ttymux-fallback-directory "~"
   "Tmux pane path be used as a last resort.")
 
@@ -76,6 +78,9 @@
 
 (defvar ttymux-split-horizontally-fn 'ttymux-split-horizontally-default
   "Specify a function to open tmux pane horizontally.")
+
+(defvar ttymux-split-vertically-fn 'ttymux-split-vertically-default
+  "Specify a function to open tmux pane vertically.")
 
 (defun ttymux--current-directory (mode)
   (pcase mode
@@ -112,6 +117,16 @@
 (defun ttymux-split-horizontally ()
   (interactive)
   (funcall ttymux-split-horizontally-fn))
+
+(defun ttymux-split-vertically-default ()
+  "Create a new vertical Tmux pane. Pane path is defined by
+`ttymux-pane-directory-method'."
+  (interactive)
+  (ttymux--tmux-cmd "split-window" "-v" "-c" (ttymux--pane-directory)))
+
+(defun ttymux-split-vertically ()
+  (interactive)
+  (funcall ttymux-split-vertically-fn))
 
 (defun ttymux--next-pane ()
   (ttymux--tmux-cmd "select-pane" "-t" ":.+"))
@@ -157,10 +172,14 @@ Tmux pane, otherwise kill the pane."
                                 ttymux-new-window-key))
         (split-horizontally-key (concat ttymux-prefix-key
                                         " "
-                                        ttymux-split-horizontally-key)))
+                                        ttymux-split-horizontally-key))
+        (split-vertically-key (concat ttymux-prefix-key
+                                      " "
+                                      ttymux-split-vertically-key)))
     (global-set-key (kbd ttymux-prefix-key) nil) ; remove other keys if any
     (global-set-key (kbd new-window-key) #'ttymux-new-window)
     (global-set-key (kbd split-horizontally-key) #'ttymux-split-horizontally)
+    (global-set-key (kbd split-vertically-key) #'ttymux-split-vertically)
     (global-set-key [remap other-window] #'ttymux-other-window)
     (global-set-key [remap delete-window] #'ttymux-delete-window))
   (run-hooks 'ttymux-mode-hook))
