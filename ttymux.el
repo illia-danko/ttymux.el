@@ -43,7 +43,6 @@
 ;; bind-key -T prefix % if "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
 ;; bind-key -T prefix \" if "$is_emacs" 'send-prefix ; send-keys \"' "split-window -v -c \"#{pane_current_path}\""
 ;; bind-key -T prefix c if "$is_emacs" "send-prefix ; send-keys c" "new-window -c \"#{pane_current_path}\""
-;; # Feature requested: https://github.com/tmux/tmux/issues/2904
 ;; bind -Temacs-keys o if "$is_emacs" "send C-x; send" "select-pane -t :.+"
 ;; bind -Temacs-keys Any { send C-x; send }
 ;; bind -Temacs-keys 1 { kill-pane -a; send C-x; send }
