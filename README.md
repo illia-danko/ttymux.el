@@ -1,6 +1,11 @@
-Emacs vanilla Tmux switcher
+Manage and navigate Tmux panes from Emacs and vise versa.
+
+There is several packages out there to address Emacs client <-> Tmux navigation
+issue. However, this one rebinds Emacs and Tmux vanilla (default) shortcuts,
+preserving a canonical workflow.
 
 Feature was requested  (https://github.com/tmux/tmux/issues/2904).
+Ready to use strated from 3.3-rc  (https://github.com/tmux/tmux/tree/3.3-rc).
 
 # Features
 
@@ -11,14 +16,14 @@ Feature was requested  (https://github.com/tmux/tmux/issues/2904).
   Emacs' `delete-other-windows`.
 * [C-x 0] - closes current Tmux panes (no-op on the last pane) or executes
   Emacs' `delete-window`.
-* [tmux-prefix-key c] - create a new Tmux window preserving Emacs buffer's path
+* [tmux-prefix-key c] - creates a new Tmux window preserving Emacs buffer's path
   (defined by 'ttymux-pane-directory-method custom variable).
-* [tmux-prefix-key %] - split Tmux pane vertically preserving Emacs buffer's
+* [tmux-prefix-key %] - splits Tmux pane vertically preserving Emacs buffer's
   path (defined by 'ttymux-pane-directory-method custom variable).
-* [tmux-prefix-key "] - split Tmux pane horizontally preserving Emacs buffer's
+* [tmux-prefix-key "] - splits Tmux pane horizontally preserving Emacs buffer's
   path (defined by 'ttymux-pane-directory-method custom variable).
 
-# Minimal tmux.conf
+# Default tmux.conf
 
 ```sh
 unbind C-b
