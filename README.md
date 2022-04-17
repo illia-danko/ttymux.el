@@ -5,6 +5,7 @@ issue. However, this one rebinds Emacs and Tmux vanilla (default) shortcuts,
 preserving a canonical workflow.
 
 Feature was requested  (https://github.com/tmux/tmux/issues/2904).
+
 Ready to use strated from 3.3-rc  (https://github.com/tmux/tmux/tree/3.3-rc).
 
 # Features

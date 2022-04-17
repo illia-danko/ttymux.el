@@ -135,6 +135,7 @@ Pane path is defined by `ttymux-pane-directory-method'."
   (interactive)
   (ttymux--tmux-cmd "split-window" "-h" "-c" (ttymux--pane-directory)))
 
+;;;###autoload
 (defun ttymux-split-horizontally ()
   "Execute a custom ttymux-split-horizontally-fn function.
 The function must split a new Tmux pane horizontally."
