@@ -176,7 +176,7 @@ The function must split a new Tmux pane vertically."
 ;;;###autoload
 (defun ttymux-other-window ()
   "Circle over Emacs windows or Tmux panes.
-The function tries to follow to native `other-window' order as
+The function tries to follow a native `other-window' order as
 closer as possible."
   (interactive)
   (cond
