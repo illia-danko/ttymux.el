@@ -30,7 +30,7 @@ Ready to use strated from 3.3-rc  (https://github.com/tmux/tmux/tree/3.3-rc).
 unbind C-b
 set -g prefix C-q
 bind C-q send-prefix
-is_emacs='echo "#{pane_current_command}" | grep -iqE "emacs"'
+is_emacs="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE emacs"
 is_other_panes='echo "#{window_panes}" | grep -vqwE "1"'
 bind-key -T prefix % if "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
 bind-key -T prefix \" if "$is_emacs" 'send-prefix ; send-keys \"' "split-window -v -c \"#{pane_current_path}\""
