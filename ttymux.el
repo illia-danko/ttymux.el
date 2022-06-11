@@ -6,8 +6,8 @@
 ;; URL: https://github.com/elijahdanko/ttymux.el
 ;; Created: February 19, 2022
 ;; Keywords: convenience, terminals, tmux, window, pane, navigation, integration
-;; Package-Requires: ((emacs "24") (projectile "2.0.0"))
-;; Version: 0.1
+;; Package-Requires: ((emacs "24") (vc))
+;; Version: 1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -66,7 +66,7 @@
 
 ;;; Code:
 
-(require 'projectile)
+(require 'vc)
 
 (defcustom ttymux-pane-directory-method 'project
   "Advice Tmux to choose a default pane directory."
@@ -105,9 +105,10 @@
 
 (defun ttymux--pane-directory ()
   (pcase ttymux-pane-directory-method
-    ('project (or (projectile-project-root)
-                  (ttymux--current-directory major-mode)
-                  ttymux-fallback-directory))
+    ('project (expand-file-name
+               (or (vc-root-dir)
+                   (ttymux--current-directory major-mode)
+                   ttymux-fallback-directory)))
     ('buffer (or (ttymux--current-directory major-mode)
                  ttymux-fallback-directory))
     (_ ttymux-fallback-directory)))
