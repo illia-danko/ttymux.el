@@ -42,7 +42,7 @@ bind -Troot C-x switch-client -Temacs-keys
 
 # Known issues
 
-## `new-window` and `split-window` are executed on a wrong Tmux session
+## `new-window` and `split-window` are executed on a different Tmux session
 
 If Emacs client is using and multiple Tmux sessions are running on the same
 machine, `split-window` and `new-window` commands always open a pane on a
