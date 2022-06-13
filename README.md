@@ -4,9 +4,7 @@ There is several packages out there to address Emacs client <-> Tmux navigation
 issue. However, this one rebinds Emacs and Tmux vanilla (default) shortcuts,
 preserving a canonical workflow.
 
-Feature was requested  (https://github.com/tmux/tmux/issues/2904).
-
-Ready to use strated from 3.3-rc  (https://github.com/tmux/tmux/tree/3.3-rc).
+Minimal version: [Tmux 3.3-rc](https://github.com/tmux/tmux/tree/3.3-rc).
 
 # Features
 
@@ -41,6 +39,14 @@ bind -Temacs-keys 1 { kill-pane -a; send C-x; send }
 bind -Temacs-keys 0 if "$is_emacs" "send C-x; send" 'if $is_other_panes kill-pane'
 bind -Troot C-x switch-client -Temacs-keys
 ```
+
+# Known issues
+
+## `new-window` and `split-window` are executed on a wrong Tmux session
+
+If Emacs client is using and multiple Tmux sessions are running on the same
+machine, `split-window` and `new-window` commands always open a pane on a
+particular Tmux session. To avoid this run Emacs server outside a Tmux session.
 
 # Licence
 
