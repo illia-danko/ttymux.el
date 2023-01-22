@@ -74,7 +74,7 @@
                  (const :tag "Current buffer's path" buffer)
                  (const :tag "Home folder path" home)))
 
-(defvar ttymux-prefix-key "C-q"
+(defvar ttymux-prefix-key "C-\\" ; same as Ctrl-4 on a linux machine
   "Tmux prefix key.")
 
 (defvar ttymux-new-window-key "c"

@@ -25,9 +25,10 @@ Minimal version: [Tmux 3.3-rc](https://github.com/tmux/tmux/tree/3.3-rc).
 # Default tmux.conf
 
 ```sh
-unbind C-b
-set -g prefix C-q
-bind C-q send-prefix
+unbind C-\\
+set -g prefix C-\\
+bind C-\\ send-prefix
+
 is_emacs="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE emacs"
 is_other_panes='echo "#{window_panes}" | grep -vqwE "1"'
 bind-key -T prefix % if "$is_emacs" "send-prefix ; send-keys %" "split-window -h -c \"#{pane_current_path}\""
