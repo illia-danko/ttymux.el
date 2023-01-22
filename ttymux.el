@@ -2,8 +2,8 @@
 ;;
 ;; Copyright (c) 2022 Elijah Danko
 ;;
-;; Author: Elijah Danko <me@elijahdanko.net>
-;; URL: https://github.com/elijahdanko/ttymux.el
+;; Author: Illia Danko <illia@danko.ws>
+;; URL: https://github.com/illia-danko/ttymux.el
 ;; Created: February 19, 2022
 ;; Keywords: convenience, terminals, tmux, window, pane, navigation, integration
 ;; Package-Requires: ((emacs "24") (vc))
